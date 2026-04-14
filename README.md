@@ -91,10 +91,10 @@ Evaluation on a 50-essay internal benchmark, scored against certified IELTS exam
 
 | Metric | Value | Notes |
 |--------|-------|-------|
-| **MAE** | **0.570 bands** | Mean Absolute Error across all criteria |
-| **Accuracy within +/-0.5 band** | **74%** | Predictions within half a band of examiner score |
-| **Accuracy within +/-1.0 band** | **90%** | Predictions within one full band |
-| **Systematic Bias** | **-0.03** | Near-zero; no consistent over/under-scoring |
+| **MAE** | **0.470 bands** | Mean Absolute Error across all criteria |
+| **Accuracy within +/-0.5 band** | **76%** | Predictions within half a band of examiner score |
+| **Accuracy within +/-1.0 band** | **98%** | Predictions within one full band |
+| **Systematic Bias** | **-0.01** | Near-zero; no consistent over/under-scoring |
 
 **Benchmark context:** Commercial Automated Essay Scoring (AES) systems target QWK >= 0.75. Human inter-rater agreement ceiling is approximately 0.77 QWK. Our pipeline achieves competitive accuracy through multi-stage calibration and dual-engine fusion.
 
