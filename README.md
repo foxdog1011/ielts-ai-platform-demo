@@ -1,253 +1,137 @@
 <div align="center">
 
-# IELTS AI Platform
+# Lumi — IELTS AI Learning System
 
-**A production AI learning platform with measurable scoring, evaluation infrastructure, and personalized learning workflows.**
+**AI assessment, evidence-grounded coaching, and a verified learning loop.**
 
-[![Next.js 16](https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-412991?style=for-the-badge&logo=openai)](https://openai.com/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-102F46?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![TypeScript 5](https://img.shields.io/badge/TypeScript-5-45538C?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-2A9D8F?style=flat-square&logo=openai&logoColor=white)](https://platform.openai.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-2A9D8F?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-102F46?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
 
-[**Live Product**](https://lumi.integratewise.com) · [Architecture](#architecture) · [Engineering Case Studies](#engineering-case-studies) · [Evaluation](#evaluation) · [Tech Stack](#tech-stack)
+[Live product](https://lumi.integratewise.com) · [Architecture](#production-architecture) · [Evaluation](#evaluation-results) · [Engineering case studies](#engineering-case-studies)
 
 </div>
 
 ---
 
-## Overview
+## What Lumi Does
 
-IELTS AI Platform turns writing and speaking practice into a measurable feedback loop: **submission → scoring → diagnosis → learning plan → progress tracking**.
-
-The project is built as a production AI system rather than a single-model wrapper. Scoring behavior is evaluated against official examiner-scored samples, model changes are tested against a measured noise floor, and technically plausible ideas are rejected when controlled experiments do not support them.
-
-The production source repository is private. This repository presents the system architecture, product surface, evaluation methodology, and engineering lessons.
-
----
-
-## Screenshots
-
-| Dashboard | Writing Scoring Results |
-|:---------:|:----------------------:|
-| ![Dashboard](./screenshots/dashboard.png) | ![Writing Scoring with Radar Chart](./screenshots/writing-scoring-radar.png) |
-
-| Speaking Recording | Score Trend |
-|:------------------:|:-----------:|
-| ![Speaking with Waveform](./screenshots/speaking-waveform.png) | ![Score Trend](./screenshots/score-trend.png) |
-
-| Error Notebook & Spaced Repetition |
-|:-----------------------------------:|
-| ![Error Notebook](./screenshots/error-notebook-spaced-repetition.png) |
-
----
-
-## Architecture
-
-```mermaid
-flowchart TB
-    U[User]
-    WEB[Next.js / React]
-    AUTH[Auth + Rate Limits]
-    SCORE[Scoring Pipeline]
-    LLM[GPT-4o-mini]
-    GUARD[Consistency Guards]
-    AGENTS[Diagnosis → Planner → Reviewer]
-    DB[(Supabase PostgreSQL)]
-    KV[(Upstash Redis)]
-
-    U --> WEB
-    WEB --> AUTH
-    AUTH --> SCORE
-    SCORE --> LLM
-    LLM --> GUARD
-    GUARD --> AGENTS
-    AGENTS --> WEB
-    WEB <--> DB
-    AUTH <--> KV
-```
-
-### Scoring Flow
+Lumi is a longitudinal IELTS learning system, not a one-shot band-score generator. An eligible Writing or Speaking assessment becomes durable evidence: the system identifies a weakness, creates a target, guides revision or practice, verifies transfer on a new prompt, and updates mastery only after repeated evidence.
 
 ```text
-Essay / transcript
-    ↓
-Rubric scoring
-    ↓
-Reflect-and-revise review
-    ↓
-Consistency guards
-    ↓
-Band calculation
-    ↓
-Diagnosis
-    ↓
-Personalized study plan
+assessment -> evidence -> weakness -> target -> practice -> revision
+           -> transfer verification -> mastery update
 ```
 
-The current production scorer runs entirely on Vercel with GPT-4o-mini; an earlier local ML path is retained only as legacy code and is not part of the active production scoring architecture.
+The production application is source-private because it contains authentication, billing, scoring, and data-ownership logic. This repository is the public engineering case study: it documents the shipped architecture, measured evaluation results, and selected design decisions without publishing the proprietary implementation.
 
----
+## Production Architecture
 
-## Engineering Highlights
+<a href="./assets/lumi-production-architecture.svg">
+  <img src="./assets/lumi-production-architecture.svg" alt="Lumi production architecture showing request boundaries, separate Writing and Speaking scoring paths, rule-based coaching, the database-owned verified learning loop, and infrastructure services." width="1400" height="1640" />
+</a>
 
-### AI Evaluation as Infrastructure
+[Open the full-size SVG](./assets/lumi-production-architecture.svg) · [Download the PNG export](./assets/lumi-production-architecture.png)
 
-Evaluation is treated as part of the product architecture, not as a one-off experiment. The project maintains an official examiner-scored gold set, repeatable evaluation scripts, regression tests, and explicit thresholds for deciding whether a metric change is meaningful.
+The diagram makes four important ownership boundaries explicit:
 
-### Multi-Agent Learning Workflow
+- **Authentication is optional at the scoring boundary.** Guest and signed-in attempts both pass request identity, validation, and account/IP rate limits; signed-in learners additionally receive durable history and targets.
+- **Writing and Speaking are different pipelines.** Writing uses two rubric passes plus reflection/revision and consistency guards. Speaking adds ASR, acoustic evidence, dimension scoring, fusion, and speaking-specific guards.
+- **Immediate coaching is deterministic today.** The Diagnosis → Planner → Reviewer sequence is rule-based and produces a cached `CoachSnapshot`; it does not mutate mastery state.
+- **The database owns durable learning state.** After a canonical assessment is stored, a fail-open projection sends evidence to a validated Supabase RPC. Model output can propose evidence, but it cannot directly promote a target.
 
-After scoring, a structured agent pipeline turns raw evaluation output into learner-facing actions:
+Target progression is deterministic:
 
-- **DiagnosisAgent** identifies weaknesses and anomalies.
-- **PlannerAgent** converts evidence into a study plan.
-- **ReviewerAgent** applies deterministic consistency checks before results reach the user.
+```text
+observed -> practising -> verified -> mastered
+```
 
-### Production Product System
+A passing revision can move a target to `verified`. Transfer must then be demonstrated on a new prompt. Two qualifying transfer passes are required for `mastered`; a failed transfer resets the streak.
 
-The application includes authentication, persistent learner state, progress tracking, spaced repetition, gamification, and deployment automation around the scoring core. It is designed as an end-to-end user product rather than an isolated model demo.
+> Reading and Listening are currently baseline-only. They do not create learning targets until the production content pools and transfer-verification path are complete.
 
-### Testability
+## Current Learner Surface
 
-Core scoring and orchestration logic is separated from UI concerns and covered by automated tests. Evaluation harnesses are also tested to prevent subtle input mismatches from producing misleading benchmark results.
+- Writing Task 1 and Task 2 assessment with rubric-level evidence and feedback
+- Speaking Part 1–3 assessment from recorded audio or a supplied transcript
+- Results, history, Coach Today, Weakness, Progress, and guided micro-practice
+- Persistent learning targets for eligible Writing and Speaking assessments
+- Streak, weekly-goal, and personal-record tracking
+- XP only for verified progress events such as completing a linked drill or verifying a target — never for score submission alone
+- Speaking mock-exam fallback for the exam stage; no unfinished mock surface is advertised as a core loop
 
----
+## Evaluation Results
+
+### Writing Official-Gold Baseline
+
+The frozen official IELTS Writing set contains 26 samples. Three anchor prompts are excluded from aggregate reporting, leaving 23 evaluation samples.
+
+| Cohort | n | MAE | Within 0.5 band | Within 1.0 band | Spearman ρ |
+|---|---:|---:|---:|---:|---:|
+| All eligible samples | 23 | 0.826 | 43.5% | 82.6% | 0.778 |
+| General Training + Task 2 | 17 | 0.765 | 58.8% | 82.4% | 0.826 |
+
+Repeated no-change runs measured an approximate noise floor of **±0.011 Spearman** and **±0.044 MAE**. Changes smaller than roughly 0.02 Spearman or 0.05 MAE are treated as noise rather than improvement.
+
+These numbers describe the internal frozen evaluation set. Lumi does not claim equivalence to an official IELTS examiner or the live exam.
+
+Speaking accuracy is intentionally not reported. The legacy Speaking anchors are synthetic and transcript-only, so they cannot validate pronunciation, fluency acoustics, or agreement with an examiner. The next defensible benchmark requires real candidate audio with examiner-assigned scores.
 
 ## Engineering Case Studies
 
-### 1. Replacing a Misleading Benchmark
+### 1. A Frozen Benchmark Prevented Metric Drift
 
-**Problem**  
-An earlier evaluation set looked useful numerically but did not provide trustworthy ground truth for product decisions.
+Earlier experiments mixed prompt types and moving sample sets, making results hard to compare. The current harness freezes official samples, excludes anchors consistently, and reports both absolute error and rank correlation. This turned “the scorer feels better” into a reproducible claim.
 
-**Diagnosis**  
-The labels were not equivalent to official examiner-scored IELTS samples, so high or low agreement could reflect label quality rather than scorer quality.
+### 2. Stability Mattered Before Tuning
 
-**Fix**  
-The evaluation workflow was rebuilt around 26 official IELTS.org samples with official task prompts, bands, and examiner commentary. Three samples used as prompt anchors are excluded from scoring evaluation, leaving 23 independent scored samples.
+LLM scoring is stochastic. The team first measured repeated-run variance, then introduced structured rubric passes, reflection/revision, and consistency guards. Experiments are accepted only when the improvement clears the measured noise floor.
 
-**Result**  
-The project now distinguishes between trustworthy evaluation data and noisy regression-only datasets instead of reporting a single attractive metric from whichever dataset performs best.
+### 3. Plausible Positive-Credit Rules Were Rejected
 
----
+The rubric contained several one-directional penalty rules, so adding corresponding positive-credit rules appeared likely to reduce high-band under-scoring. Repeated controlled runs instead reduced rank correlation beyond the measured noise floor. The change was reverted rather than retained as permanent prompt debt.
 
-### 2. Measuring the Noise Floor Before Claiming Improvement
+### 4. A Model Migration Exposed Configuration Drift
 
-**Problem**  
-LLM-based scoring varies between repeated runs, so a small metric increase can look like an engineering improvement even when the code has not changed.
+A GPT-5.2 experiment exposed assumptions that prevented a clean comparison: capabilities had been inferred from model names, token-parameter logic had drifted between call sites, reasoning tokens changed the output budget, and one scoring component still pinned the previous model. The experiment was stopped instead of being reported as a model-quality result. The production rubric scorer remains on GPT-4o-mini.
 
-**Experiment**  
-Three identical evaluation runs were measured on the same 23-sample official set.
+### 5. Pairwise Ranking Is Research, Not Production
 
-| Metric | Observed run-to-run spread |
-|---|---:|
-| Spearman | ±0.011 |
-| MAE | ±0.044 |
+Recent prototypes test whether comparative judgments are more stable than direct band prediction. Held-out Writing and transcript-only Speaking experiments show promising ordinal ranking, but the samples are small and the methods are not wired into the production request path. The repository labels those results as research instead of presenting them as shipped capability.
 
-**Decision rule**  
-Changes smaller than roughly **0.02 Spearman** or **0.05 MAE** are treated as noise rather than evidence of improvement.
+## Reliability & Operating Constraints
 
-This changed how experiments are interpreted: a new approach must clear the measured variance of the pipeline before it is considered better.
+- Scoring stays authoritative: coaching or learning-state projection failure must not discard a valid score.
+- Idempotency and legal state transitions are enforced in PostgreSQL RPCs.
+- Rate limits use account and IP identity with server-side accounting.
+- Server-only Supabase credentials are guarded from browser imports.
+- Cost, latency, and trace metadata are recorded for scoring operations.
+- Vercel owns the scoring orchestration. Recorded Speaking attempts can also call an active, authenticated VPS acoustic sidecar; its signal priority is operational but not yet validated against an examiner-scored audio set.
 
----
+## Stack
 
-### 3. Rejecting a Plausible Scoring Improvement
-
-**Hypothesis**  
-The scoring system had several one-directional penalty rules. Adding corresponding positive-credit rules seemed like a reasonable way to reduce high-band under-scoring.
-
-**Test**  
-The modified scorer was run repeatedly against the same evaluation set and compared with the control.
-
-**Result**  
-The credit-rule version produced lower rank correlation than the control by more than the measured noise floor.
-
-**Decision**  
-The change was reverted rather than retained because it sounded conceptually correct. The result pointed toward a different class of solution: better decidable evidence, a different arbitration step, or a stronger model.
-
----
-
-### 4. Model Upgrade Assumptions Failed in Production-Like Evaluation
-
-A newer model was initially treated as a drop-in replacement. Evaluation exposed several hidden assumptions instead:
-
-- model capabilities had been inferred from model-name patterns;
-- token-parameter logic existed in two places and had drifted;
-- reasoning tokens consumed the output budget differently on long prompts;
-- one scoring component still pinned the previous model, invalidating a clean A/B comparison.
-
-The experiment was stopped rather than reported as a model-quality comparison because the configuration itself was not yet controlled.
-
----
-
-## Evaluation
-
-### Official Gold Set
-
-The current trusted writing benchmark uses official IELTS.org samples.
-
-| Slice | MAE | Within ±0.5 | Within ±1.0 | Spearman |
-|---|---:|---:|---:|---:|
-| Official samples, all | 0.826 | 43.5% | 82.6% | **0.778** |
-| General Training + Task 2 | 0.765 | 58.8% | 82.4% | **0.826** |
-
-These numbers are intentionally presented with dataset context rather than as a universal claim of scorer accuracy. The benchmark is small, and different IELTS task types show materially different error behavior.
-
-### Why Rank Correlation Matters Here
-
-Absolute error shows how far predictions are from examiner bands, while Spearman correlation measures whether stronger and weaker responses are ordered consistently. The project tracks both because a scorer can appear well-calibrated on average while still ranking responses poorly.
-
----
-
-## Product Features
-
-The engineering work supports a complete learner experience:
-
-- Writing and speaking practice flows
-- Personalized diagnosis and study planning
-- Error notebook and spaced repetition
-- Progress history and learning analytics
-- Timed exam simulation
-- Gamification and practice goals
-- Authentication and persistent profiles
-
----
-
-## Technical Decisions
-
-### Why keep deterministic guards around an LLM scorer?
-
-LLM outputs are flexible but can violate known product constraints. Deterministic checks catch conditions that are cheap and unambiguous to validate, while leaving semantic judgment to the model.
-
-### Why maintain a gold set separately from product data?
-
-User submissions are useful for product analytics but usually lack reliable examiner labels. A separate benchmark prevents product usage data from being mistaken for evaluation ground truth.
-
-### Why measure variance before tuning prompts?
-
-Without a noise estimate, prompt iterations encourage overfitting to random run-to-run movement. The measured noise floor creates a minimum bar that an experimental change must exceed.
-
-### Why reject improvements instead of continuously stacking rules?
-
-Additional rules increase system complexity and can interact in unexpected ways. A change that does not produce measurable improvement is removed rather than becoming permanent prompt debt.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
+| Layer | Production choice |
 |---|---|
-| **Frontend** | Next.js 16, React 19, TypeScript 5 |
-| **AI** | OpenAI GPT-4o-mini |
-| **Data** | Supabase PostgreSQL, Upstash Redis |
-| **Auth** | NextAuth v5 |
-| **Validation** | Zod |
-| **Testing** | Node.js built-in test runner, custom evaluation harnesses |
-| **Deployment** | Vercel |
-| **Styling** | Tailwind CSS v4 |
-
----
+| Web and API | Next.js 16, React 19, TypeScript 5 |
+| Validation | Zod |
+| AI scoring | OpenAI GPT-4o-mini |
+| Speech evidence | GPT-4o-mini-transcribe, a Whisper acoustic pass, optional OpenAI audio judge, and an authenticated VPS acoustic sidecar |
+| Durable data | Supabase PostgreSQL with Row Level Security |
+| Ephemeral state | Upstash Redis / Vercel KV |
+| Authentication | NextAuth with subject binding |
+| Observability | Sentry, structured logs, cost and latency telemetry |
+| Deployment | Vercel |
 
 ## Repository Note
 
-This is a public technical showcase. The production source code, credentials, internal datasets, and sensitive operational configuration remain in a private repository.
+This showcase intentionally contains documentation and visual assets only. It does not include production source, secrets, user data, internal prompts, or deploy credentials.
+
+---
+
+<div align="center">
+
+Built and evaluated as a production learning system — with explicit limits, reproducible metrics, and state transitions the model does not own.
+
+</div>

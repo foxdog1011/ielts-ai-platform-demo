@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1640" viewBox="0 0 1400 1640" role="img" aria-labelledby="title desc">
+  <title id="title">Lumi production architecture</title>
+  <desc id="desc">Architecture diagram showing the Next.js learner experience, guest and authenticated request boundary, separate Writing and Speaking scoring pipelines, deterministic coaching, a fail-open projection into a database-owned verified learning loop, and production infrastructure.</desc>
+  <defs>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M 28 0 L 0 0 0 28" fill="none" stroke="#DCE5E7" stroke-width="1" opacity="0.65"/>
+    </pattern>
+    <marker id="arrow-navy" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#102F46"/></marker>
+    <marker id="arrow-teal" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#2A9D8F"/></marker>
+    <marker id="arrow-brand" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 Z" fill="#45538C"/></marker>
+    <filter id="card-shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#102F46" flood-opacity="0.08"/></filter>
+    <style>
+      text { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .eyebrow { font-size: 18px; font-weight: 800; letter-spacing: 2.6px; }
+      .section { font-size: 18px; font-weight: 800; letter-spacing: 2px; fill: #45538C; }
+      .card-title { font-size: 25px; font-weight: 760; fill: #102F46; }
+      .node-title { font-size: 20px; font-weight: 760; fill: #102F46; }
+      .body { font-size: 17px; font-weight: 500; fill: #4B6678; }
+      .small { font-size: 15px; font-weight: 560; fill: #5E7482; }
+      .pill { font-size: 14px; font-weight: 820; letter-spacing: 1.2px; }
+      .on-dark-title { font-size: 20px; font-weight: 760; fill: #FFFFFF; }
+      .on-dark-body { font-size: 17px; font-weight: 500; fill: #B8CAD2; }
+      .on-dark-small { font-size: 15px; font-weight: 560; fill: #B8CAD2; }
+    </style>
+  </defs>
+  <rect width="1400" height="1640" fill="#F4F7F5"/><rect width="1400" height="1640" fill="url(#grid)"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1400" height="178" fill="#102F46"/>
+  <rect x="78" y="50" width="54" height="54" rx="16" fill="#F2B66D"/><path d="M94 77h22M105 66v22" stroke="#102F46" stroke-width="6" stroke-linecap="round"/>
+  <text x="154" y="73" fill="#F2B66D" class="eyebrow">LUMI / PRODUCTION SYSTEM</text>
+  <text x="78" y="132" fill="#FFFFFF" font-size="43" font-weight="780">From assessment evidence to verified mastery</text>
+  <text x="1322" y="72" fill="#A9C3CB" font-size="16" font-weight="650" text-anchor="end">Next.js · OpenAI · Supabase · Upstash</text>
+
+  <!-- Layer 1 -->
+  <text x="78" y="224" class="section">01 · EXPERIENCE AND REQUEST BOUNDARY</text>
+  <rect x="70" y="246" width="1260" height="178" rx="28" fill="#FFFFFF" stroke="#C8D6DB" stroke-width="2" filter="url(#card-shadow)"/>
+  <rect x="98" y="278" width="370" height="116" rx="20" fill="#EEF0F8" stroke="#BBC2DC" stroke-width="2"/>
+  <text x="124" y="316" class="node-title">Learner experience</text><text x="124" y="346" class="body">Assessment · Results · Coach</text><text x="124" y="373" class="body">Practice · Weakness · Progress</text>
+  <path d="M488 336 H540" fill="none" stroke="#102F46" stroke-width="3" marker-end="url(#arrow-navy)"/>
+  <rect x="564" y="278" width="332" height="116" rx="20" fill="#E9F5F2" stroke="#9DCFC5" stroke-width="2"/>
+  <text x="590" y="316" class="node-title">Next.js request edge</text><text x="590" y="346" class="body">Zod validation · telemetry</text><text x="590" y="373" class="body">canonical request identity</text>
+  <path d="M916 336 H968" fill="none" stroke="#102F46" stroke-width="3" marker-end="url(#arrow-navy)"/>
+  <rect x="992" y="278" width="310" height="116" rx="20" fill="#FFF5E6" stroke="#E7C68C" stroke-width="2"/>
+  <text x="1018" y="316" class="node-title">Access controls</text><text x="1018" y="346" class="body">guest or NextAuth subject</text><text x="1018" y="373" class="body">account + IP rate limits</text>
+  <rect x="1106" y="260" width="168" height="29" rx="14.5" fill="#102F46"/><text x="1190" y="280" text-anchor="middle" fill="#FFFFFF" class="pill">AUTH OPTIONAL</text>
+  <path d="M700 424 V476 M360 476 H1040" fill="none" stroke="#102F46" stroke-width="3"/>
+  <path d="M360 476 V510" fill="none" stroke="#102F46" stroke-width="3" marker-end="url(#arrow-navy)"/>
+  <path d="M1040 476 V510" fill="none" stroke="#102F46" stroke-width="3" marker-end="url(#arrow-navy)"/>
+
+  <!-- Layer 2 -->
+  <rect x="68" y="482" width="488" height="28" fill="#F4F7F5"/>
+  <text x="78" y="502" class="section">02 · EVIDENCE-GROUNDED ASSESSMENT</text>
+  <rect x="70" y="524" width="610" height="356" rx="28" fill="#FFFFFF" stroke="#BBC2DC" stroke-width="2" filter="url(#card-shadow)"/>
+  <rect x="96" y="550" width="118" height="31" rx="15.5" fill="#45538C"/><text x="155" y="571" text-anchor="middle" fill="#FFFFFF" class="pill">WRITING</text>
+  <text x="96" y="618" class="card-title">Rubric scoring with consistency guards</text>
+  <rect x="96" y="652" width="162" height="102" rx="18" fill="#F3F4FA" stroke="#C6CCE1" stroke-width="2"/><text x="177" y="687" text-anchor="middle" class="node-title">Input</text><text x="177" y="716" text-anchor="middle" class="small">essay + prompt</text><text x="177" y="740" text-anchor="middle" class="small">or chart data</text>
+  <path d="M274 703 H306" fill="none" stroke="#45538C" stroke-width="3" marker-end="url(#arrow-brand)"/>
+  <rect x="322" y="652" width="162" height="102" rx="18" fill="#F3F4FA" stroke="#C6CCE1" stroke-width="2"/><text x="403" y="687" text-anchor="middle" class="node-title">Rubric passes</text><text x="403" y="716" text-anchor="middle" class="small">A + B scoring</text><text x="403" y="740" text-anchor="middle" class="small">reflect + revise</text>
+  <path d="M500 703 H532" fill="none" stroke="#45538C" stroke-width="3" marker-end="url(#arrow-brand)"/>
+  <rect x="548" y="652" width="106" height="102" rx="18" fill="#F3F4FA" stroke="#C6CCE1" stroke-width="2"/><text x="601" y="687" text-anchor="middle" class="node-title">Guard</text><text x="601" y="716" text-anchor="middle" class="small">band +</text><text x="601" y="740" text-anchor="middle" class="small">evidence</text>
+  <line x1="96" y1="788" x2="654" y2="788" stroke="#D7DEE5" stroke-width="2"/><text x="96" y="822" class="body">GPT-4o-mini · frozen evals · measured noise floor</text><text x="96" y="850" class="small">Model proposes rubric evidence; application applies guards.</text>
+
+  <rect x="720" y="524" width="610" height="356" rx="28" fill="#FFFFFF" stroke="#9DCFC5" stroke-width="2" filter="url(#card-shadow)"/>
+  <rect x="746" y="550" width="122" height="31" rx="15.5" fill="#14766D"/><text x="807" y="571" text-anchor="middle" fill="#FFFFFF" class="pill">SPEAKING</text>
+  <text x="746" y="618" class="card-title">Transcript scoring + optional acoustic evidence</text>
+  <rect x="746" y="652" width="162" height="102" rx="18" fill="#EDF8F5" stroke="#B1DCD4" stroke-width="2"/><text x="827" y="687" text-anchor="middle" class="node-title">Input</text><text x="827" y="716" text-anchor="middle" class="small">audio or manual</text><text x="827" y="740" text-anchor="middle" class="small">transcript</text>
+  <path d="M924 703 H956" fill="none" stroke="#2A9D8F" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <rect x="972" y="652" width="162" height="102" rx="18" fill="#EDF8F5" stroke="#B1DCD4" stroke-width="2"/><text x="1053" y="687" text-anchor="middle" class="node-title">Evidence</text><text x="1053" y="716" text-anchor="middle" class="small">ASR + acoustic</text><text x="1053" y="740" text-anchor="middle" class="small">dimension scores</text>
+  <path d="M1150 703 H1182" fill="none" stroke="#2A9D8F" stroke-width="3" marker-end="url(#arrow-teal)"/>
+  <rect x="1198" y="652" width="106" height="102" rx="18" fill="#EDF8F5" stroke="#B1DCD4" stroke-width="2"/><text x="1251" y="687" text-anchor="middle" class="node-title">Guard</text><text x="1251" y="716" text-anchor="middle" class="small">fusion +</text><text x="1251" y="740" text-anchor="middle" class="small">evidence</text>
+  <line x1="746" y1="788" x2="1304" y2="788" stroke="#D7DEE5" stroke-width="2"/><text x="746" y="822" class="body">OpenAI dual-pass ASR + optional audio judge</text><text x="746" y="850" class="small">Active VPS sidecar adds prosody; audio-gold validation is pending.</text>
+  <path d="M375 880 V912 H700 M1025 880 V912 H700 V926" fill="none" stroke="#102F46" stroke-width="3" marker-end="url(#arrow-navy)"/>
+
+  <!-- Layer 3 -->
+  <rect x="561" y="924" width="278" height="42" rx="21" fill="#102F46"/><text x="700" y="952" text-anchor="middle" fill="#FFFFFF" class="pill">CANONICAL ASSESSMENT REPORT</text>
+  <text x="78" y="1001" class="section">03 · ONE SCORE, TWO POST-SCORE PROJECTIONS</text>
+  <path d="M700 966 V1014 M375 1014 H1025 M375 1014 V1038 M1025 1014 V1038" fill="none" stroke="#102F46" stroke-width="3"/>
+
+  <rect x="70" y="1040" width="610" height="302" rx="28" fill="#FFFFFF" stroke="#E7C68C" stroke-width="2" filter="url(#card-shadow)"/>
+  <rect x="96" y="1066" width="172" height="31" rx="15.5" fill="#96520A"/><text x="182" y="1087" text-anchor="middle" fill="#FFFFFF" class="pill">IMMEDIATE COACH</text>
+  <text x="96" y="1134" class="card-title">Rule-based coaching snapshot</text>
+  <rect x="96" y="1168" width="150" height="82" rx="17" fill="#FFF6E8" stroke="#E7C68C" stroke-width="2"/><text x="171" y="1201" text-anchor="middle" class="node-title">Diagnosis</text><text x="171" y="1228" text-anchor="middle" class="small">evidence → issue</text>
+  <path d="M260 1209 H294" fill="none" stroke="#D88A2D" stroke-width="3" marker-end="url(#arrow-navy)"/>
+  <rect x="310" y="1168" width="150" height="82" rx="17" fill="#FFF6E8" stroke="#E7C68C" stroke-width="2"/><text x="385" y="1201" text-anchor="middle" class="node-title">Planner</text><text x="385" y="1228" text-anchor="middle" class="small">next actions</text>
+  <path d="M474 1209 H508" fill="none" stroke="#D88A2D" stroke-width="3" marker-end="url(#arrow-navy)"/>
+  <rect x="524" y="1168" width="130" height="82" rx="17" fill="#FFF6E8" stroke="#E7C68C" stroke-width="2"/><text x="589" y="1201" text-anchor="middle" class="node-title">Reviewer</text><text x="589" y="1228" text-anchor="middle" class="small">quality gate</text>
+  <text x="96" y="1290" class="body">CoachSnapshot → KV cache (30 days when signed in)</text><text x="96" y="1318" class="small">Never blocks a valid score and never owns mastery state.</text>
+
+  <rect x="720" y="1040" width="610" height="302" rx="28" fill="#FFFFFF" stroke="#9DCFC5" stroke-width="2" filter="url(#card-shadow)"/>
+  <rect x="746" y="1066" width="204" height="31" rx="15.5" fill="#14766D"/><text x="848" y="1087" text-anchor="middle" fill="#FFFFFF" class="pill">DURABLE LEARNING OS</text>
+  <text x="746" y="1134" class="card-title">Database-owned target progression</text>
+  <rect x="746" y="1168" width="558" height="82" rx="17" fill="#EDF8F5" stroke="#B1DCD4" stroke-width="2"/><text x="774" y="1201" class="node-title">Evidence → weakness → target → practice → revision</text><text x="774" y="1229" class="small">new-prompt transfer verification → mastery update</text>
+  <rect x="746" y="1270" width="112" height="38" rx="19" fill="#E3ECEF"/><text x="802" y="1295" text-anchor="middle" class="small">observed</text><path d="M868 1289 H890" fill="none" stroke="#2A9D8F" stroke-width="2.5" marker-end="url(#arrow-teal)"/>
+  <rect x="904" y="1270" width="128" height="38" rx="19" fill="#D9EEEA"/><text x="968" y="1295" text-anchor="middle" class="small">practising</text><path d="M1042 1289 H1064" fill="none" stroke="#2A9D8F" stroke-width="2.5" marker-end="url(#arrow-teal)"/>
+  <rect x="1078" y="1270" width="105" height="38" rx="19" fill="#CBE8E2"/><text x="1130" y="1295" text-anchor="middle" class="small">verified</text><path d="M1193 1289 H1215" fill="none" stroke="#2A9D8F" stroke-width="2.5" marker-end="url(#arrow-teal)"/>
+  <rect x="1229" y="1270" width="75" height="38" rx="19" fill="#14766D"/><text x="1266" y="1295" text-anchor="middle" class="small" style="fill:#FFFFFF">mastered</text>
+  <rect x="1128" y="1022" width="176" height="29" rx="14.5" fill="#102F46"/><text x="1216" y="1042" text-anchor="middle" fill="#FFFFFF" class="pill">FAIL-OPEN PATH</text>
+
+  <!-- Layer 4 -->
+  <text x="78" y="1390" class="section">04 · PRODUCTION INFRASTRUCTURE</text>
+  <rect x="70" y="1412" width="1260" height="164" rx="28" fill="#102F46" filter="url(#card-shadow)"/>
+  <rect x="96" y="1440" width="228" height="106" rx="20" fill="#183D55" stroke="#426376" stroke-width="2"/><text x="118" y="1477" class="on-dark-title">Vercel</text><text x="118" y="1507" class="on-dark-body">web · API · scoring</text><text x="118" y="1533" class="on-dark-small">Sentry traces</text>
+  <rect x="340" y="1440" width="228" height="106" rx="20" fill="#183D55" stroke="#426376" stroke-width="2"/><text x="362" y="1477" class="on-dark-title">Supabase</text><text x="362" y="1507" class="on-dark-body">reports · targets</text><text x="362" y="1533" class="on-dark-small">RLS + validated RPCs</text>
+  <rect x="584" y="1440" width="228" height="106" rx="20" fill="#183D55" stroke="#426376" stroke-width="2"/><text x="606" y="1477" class="on-dark-title">Upstash Redis</text><text x="606" y="1507" class="on-dark-body">limits · coach cache</text><text x="606" y="1533" class="on-dark-small">ephemeral state</text>
+  <rect x="828" y="1440" width="228" height="106" rx="20" fill="#183D55" stroke="#426376" stroke-width="2"/><text x="850" y="1477" class="on-dark-title">OpenAI</text><text x="850" y="1507" class="on-dark-body">rubric · ASR · audio</text><text x="850" y="1533" class="on-dark-small">usage telemetry</text>
+  <rect x="1072" y="1440" width="232" height="106" rx="20" fill="#183D55" stroke="#426376" stroke-width="2"/><text x="1094" y="1477" class="on-dark-title">VPS sidecar</text><text x="1094" y="1507" class="on-dark-body">faster-whisper · prosody</text><text x="1094" y="1533" class="on-dark-small">audio-gold eval pending</text>
+  <text x="70" y="1610" fill="#5E7482" font-size="15" font-weight="600">Architecture reflects the production code path as of 2026-08-31. Research-only pairwise scoring is intentionally excluded.</text>
+</svg>
