@@ -10,7 +10,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-2A9D8F?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Deployed-Vercel-102F46?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
 
-[Live product](https://lumi.integratewise.com) · [Architecture](#production-architecture) · [Evaluation](#evaluation-results) · [Engineering case studies](#engineering-case-studies)
+[Live product](https://lumi.covenest.systems/) · [Learner walkthrough](#learner-walkthrough) · [Architecture](#production-architecture) · [Evaluation](#evaluation-results) · [Engineering case studies](#engineering-case-studies)
 
 </div>
 
@@ -26,6 +26,20 @@ assessment -> evidence -> weakness -> target -> practice -> revision
 ```
 
 The production application is source-private because it contains authentication, billing, scoring, and data-ownership logic. This repository is the public engineering case study: it documents the shipped architecture, measured evaluation results, and selected design decisions without publishing the proprietary implementation.
+
+## Learner Walkthrough
+
+![Public Lumi landing page with an illustrative learning map and a single next mission](./assets/lumi-public-landing-2026-10.png)
+
+*Public landing-page test fixture, captured in October 2026. The learning map uses illustrative values; it is not a learner account or evidence of scoring accuracy.*
+
+| Step | What the learner sees | What the system records |
+|---|---|---|
+| 1. Assess | A Writing prompt or Speaking task, followed by a score and the evidence behind it | A canonical assessment for an eligible signed-in attempt |
+| 2. Act | One priority weakness, a linked practice task, and a chance to revise | A recommendation and practice or revision events |
+| 3. Verify | A new prompt checks whether improvement transfers beyond the original answer | Database-controlled target transitions, with mastery requiring repeated qualifying evidence |
+
+[Try the public product](https://lumi.covenest.systems/) to see the current interface. This screenshot documents the page layout; the assessment and learning-state rules are described below.
 
 ## Production Architecture
 
@@ -64,7 +78,7 @@ A passing revision can move a target to `verified`. Transfer must then be demons
 
 ## Evaluation Results
 
-### Writing Official-Gold Baseline
+### Writing Official-Gold Baseline — 2026-07-26
 
 The frozen official IELTS Writing set contains 26 samples. Three anchor prompts are excluded from aggregate reporting, leaving 23 evaluation samples.
 
@@ -75,7 +89,7 @@ The frozen official IELTS Writing set contains 26 samples. Three anchor prompts 
 
 Repeated no-change runs measured an approximate noise floor of **±0.011 Spearman** and **±0.044 MAE**. Changes smaller than roughly 0.02 Spearman or 0.05 MAE are treated as noise rather than improvement.
 
-These numbers describe the internal frozen evaluation set. Lumi does not claim equivalence to an official IELTS examiner or the live exam.
+These numbers describe the July internal frozen evaluation baseline, measured before the October 2026 anchor-loader repair. They must not be read as a fresh production accuracy measurement. The later common-subset experiment uses a different evaluation cohort, so its figures are not directly interchangeable with this table. Lumi does not claim equivalence to an official IELTS examiner or the live exam.
 
 Speaking accuracy is intentionally not reported. The legacy Speaking anchors are synthetic and transcript-only, so they cannot validate pronunciation, fluency acoustics, or agreement with an examiner. The next defensible benchmark requires real candidate audio with examiner-assigned scores.
 
